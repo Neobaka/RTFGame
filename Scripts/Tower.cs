@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class Tower : MonoBehaviour
 {
@@ -21,6 +21,7 @@ public class Tower : MonoBehaviour
 
     public TowerType type;
     public int cost = 100;
+    public Sprite icon;
     public UpgradeStats[] upgrades;
 
     [SerializeField] private float damage = 10f;

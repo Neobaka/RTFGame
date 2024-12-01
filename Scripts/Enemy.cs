@@ -1,8 +1,8 @@
-п»їusing UnityEngine;
+using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public enum EnemyType //РўРёРїС‹ РІСЂР°РіРѕРІ
+    public enum EnemyType
     {
         Normal,
         Fast,
@@ -10,26 +10,23 @@ public class Enemy : MonoBehaviour
         Flying
     }
 
-
     public EnemyType type;
     [SerializeField] private float baseSpeed = 10f;
     [SerializeField] private float baseHealth = 100f;
     [SerializeField] private int goldReward = 50;
 
-
     private float speed;
     private float health;
-    private Transform[] waypoints;
-    private int currentWaypointIndex = 0;
-
-
+    public Transform[] waypoints;
+    public int waypointIndex = 0;
 
     public void Initialize(Transform[] points)
     {
         waypoints = points;
         transform.position = waypoints[0].position;
+        Debug.Log($"Initialized with {points.Length} waypoints");
 
-        // РќР°СЃС‚СЂРѕР№РєР° С…Р°СЂР°РєС‚РµСЂРёСЃС‚РёРє РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° РІСЂР°РіР°
+        // Настройка характеристик в зависимости от типа врага
         switch (type)
         {
             case EnemyType.Fast:
@@ -58,19 +55,34 @@ public class Enemy : MonoBehaviour
 
     private void Move()
     {
-        if (currentWaypointIndex < waypoints.Length)
-        {
-            Vector3 targetPosition = waypoints[currentWaypointIndex].position;
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
-
-            if (transform.position == targetPosition)
-            {
-                currentWaypointIndex++;
-            }
-        }
-        else
+        if (waypointIndex >= waypoints.Length)
         {
             ReachEnd();
+            return;
+        }
+
+        Vector3 targetPosition = waypoints[waypointIndex].position;
+        Vector3 moveDirection = (targetPosition - transform.position).normalized;
+
+        // Добавим поворот в сторону движения
+        if (moveDirection != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+        }
+
+        // Движение к текущей точке
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            targetPosition,
+            speed * Time.deltaTime
+        );
+
+        // Проверка достижения текущей точки
+        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        {
+            waypointIndex++;
+            Debug.Log($"Reached waypoint {waypointIndex}");
         }
     }
 
